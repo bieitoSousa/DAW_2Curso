@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 /**
@@ -114,14 +115,22 @@ public class DB_driver {
     }
     public static void main(String[] args){
         DB_driver db = new DB_driver();
+        /*********
         db.startDB();
         db.getData();
         db.inserts();
         db.selects();
         db.deletes();
+        db.selects();
         db.finishDB();
-        
-        
+         */////////////
+        db.startDB();
+        db.CargarObj();
+        db.getClientes();
+        db.getEmpleados();
+        db.getProductos();
+        db.getTiendas();
+        db.finishDB();
     }
     
 	
@@ -313,60 +322,297 @@ public class DB_driver {
     }
 
     private void selects() {
-       selectTienda( con,"*");
-       selectCliente(con,"*");
-       selectEmpleado(con,"*");
-       selectProducto(con,"*");
-       selectTiendaProducto(con,"*" );
-       selectTiendaEmpleado(con,"*");
+       selectTienda( con);
+       selectCliente(con);
+       selectEmpleado(con);
+       selectProducto(con);
+       selectTiendaProducto(con );
+       selectTiendaEmpleado(con);
     }
 
-    private void selectTienda(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void selectTienda(Connection con) {
+        try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from TIENDA");
+            
+            while(rs.next()){
+                System.out.println("TIENDA_id = [" + rs.getInt("TIENDA_id")+"]");
+                System.out.println("TIENDA_name = [" + rs.getString("TIENDA_name")+"]");
+                System.out.println("TIENDA_provincia = [" + rs.getString("TIENDA_provincia")+"]");
+                System.out.println("TIENDA_ciudad = [" + rs.getString("TIENDA_ciudad")+"]");
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }
     }
 
-    private void selectCliente(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void selectCliente(Connection con) {
+        try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from CLIENTE");
+            
+            while(rs.next()){
+                System.out.println("CLIENTE_id = [" + rs.getInt("CLIENTE_id")+"]");
+                System.out.println("CLIENTE_name = [" + rs.getString("CLIENTE_name")+"]");
+                System.out.println("CLIENTE_apellido = [" + rs.getString("CLIENTE_apellido")+"]");
+                System.out.println("CLIENTE_email = [" + rs.getString("CLIENTE_email")+"]");
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }
     }
 
-    private void selectEmpleado(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void selectEmpleado(Connection con) {
+         try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from EMPLEADO");
+            
+            while(rs.next()){
+                System.out.println("EMPLEADO_id = [" + rs.getInt("EMPLEADO_id")+"]");
+                System.out.println("EMPLEADO_name = [" + rs.getString("EMPLEADO_name")+"]");
+                System.out.println("EMPLEADO_apellido = [" + rs.getString("EMPLEADO_apellido")+"]");
+            }   
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }    }
+
+    private void selectProducto(Connection con) {
+        try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from PRODUCTO");
+            
+            while(rs.next()){
+                System.out.println("PRODUCTO_id = [" + rs.getInt("PRODUCTO_id")+"]");
+                System.out.println("PRODUCTO_name = [" + rs.getString("PRODUCTO_name")+"]");
+                System.out.println("PRODUCTO_price = [" + rs.getFloat("PRODUCTO_price")+"]");
+                System.out.println("PRODUCTO_description = [" + rs.getString("PRODUCTO_description")+"]");
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }
     }
 
-    private void selectProducto(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    private void selectTiendaEmpleado(Connection con) {
+        try
+        {
 
-    private void selectTiendaProducto(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+            Statement statement = con.createStatement();
 
-    private void selectTiendaEmpleado(Connection con, String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO");
+            
+            while(rs.next()){
+                System.out.println("TIENDA_id = [" + rs.getInt("TIENDA_id")+"]");
+                System.out.println("EMPLEADO_id = [" + rs.getInt("EMPLEADO_id")+"]");
+                System.out.println("nHoras = [" + rs.getFloat("nHoras")+"]");
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }    }
+
+    private void selectTiendaProducto(Connection con) {
+         try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO");
+            
+            while(rs.next()){
+                System.out.println("TIENDA_id = [" + rs.getInt("TIENDA_id")+"]");
+                System.out.println("PRODUCTO_id = [" + rs.getInt("PRODUCTO_id")+"]");
+                System.out.println("stock = [" + rs.getFloat("stock")+"]");
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }    
+    }    
 
     private void deletes() {
-       deleteTienda( con,"*");
-       deleteCliente(con,"*");
-       deleteEmpleado(con,"*");
-       deleteProducto(con,"*");
+       deleteTienda( con,"Tname1");
+       deleteCliente(con,"Cliname1");
+       deleteEmpleado(con,"Emplname1");
+       deleteProducto(con,"Prodname1");
+       deleteTiendaProducto(con, 1, 1 );
+       deleteTiendaEmpleado(con, 1, 1);
     }
 
-    private void deleteTienda(Connection con, String string) {
+    private void deleteTienda(Connection con, String name) {
+        try{
+            String sql = "DELETE FROM TIENDA WHERE TIENDA_name = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println(" TIENDA ["+ name + "] --> borrada con éxito");
+        }
+        catch(SQLException e){
+            System.err.println( " TIENDA ["+ name + "] ERROR no se a podido borrar" + e.getMessage());
+        }
+    }
+
+    private void deleteCliente(Connection con, String name) {
+        try{
+            String sql = "DELETE FROM CLIENTE WHERE CLIENTE_name = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println("CLIENTE ["+ name + "] --> borrado con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(" CLIENTE ["+ name + "] ERROR no se a podido borrar" +e.getMessage());
+        }  
+    }
+
+    private void deleteEmpleado(Connection con, String name) {
+        try{
+            String sql = "DELETE FROM EMPLEADO WHERE EMPLEADO_name = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println("EMPLEADO ["+ name + "] --> borrado con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(" EMPLEADO ["+ name + "] ERROR no se a podido borrar" +e.getMessage());
+        }  
+    }
+
+    private void deleteProducto(Connection con, String name) {
+         try{
+            String sql = "DELETE FROM PRODUCTO WHERE PRODUCTO_name = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println("PRODUCTO ["+ name + "] --> borrado con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(" PRODUCTO ["+ name + "] ERROR no se a podido borrar" +e.getMessage());
+        }  
+    }
+    
+    
+
+    private void deleteTiendaProducto(Connection con, int idTiend, int idProd) {
+        try{
+            String sql = "DELETE FROM TIENDA_PRODUCTO WHERE TIENDA_id = ? and PRODUCTO_id = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, idTiend);
+            pstmt.setInt(2, idProd);
+            pstmt.executeUpdate();
+            System.out.println("TIENDA_PRODUCTO borrada con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }  
+    }
+
+    private void deleteTiendaEmpleado(Connection con, int idTiend, int idEmp) {
+         try{
+            String sql = "DELETE FROM TIENDA_EMPLEADO WHERE TIENDA_id = ? and EMPLEADO_id = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, idTiend);
+            pstmt.setInt(2, idEmp);
+            pstmt.executeUpdate();
+            System.out.println("TIENDA_EMPLEADO borrada con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }  
+    }
+    
+    
+    private static void update(Connection con,String oldName,String newName){
+        try{
+            String sql = "UPDATE person SET nome = ? "
+                + "WHERE nome = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, newName);
+            pstmt.setString(2, oldName);
+            pstmt.executeUpdate();
+            System.out.println("Nome da persoa actualizada con éxito");
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void getClientes() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void deleteCliente(Connection con, String string) {
+    private void getEmpleados() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void deleteEmpleado(Connection con, String string) {
+    private void getProductos() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private void deleteProducto(Connection con, String string) {
+    private void getTiendas() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-	
+
+    private void CargarObj() {
+        cargarClientes(con);
+        cargarEmpleados(con);
+        cargarProductos(con);
+        cargarTiendas(con);
+    }
+
+    private void cargarClientes(Connection con) {
+        try
+        {
+
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from CLIENTE");
+            
+            while(rs.next()){
+               new Cliente ( rs.getInt("CLIENTE_id"),
+                             rs.getString("CLIENTE_name"),
+                             rs.getString("CLIENTE_apellido"),
+                             rs.getString("CLIENTE_email")
+               );
+            }
+        }
+        catch(SQLException e){
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void cargarEmpleados(Connection con) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private void cargarProductos(Connection con) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private void cargarTiendas(Connection con) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }//fin DB
 
