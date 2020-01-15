@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 /**
  *
  * @author bieito
@@ -24,7 +25,12 @@ import java.sql.Statement;
 
 
 public class DB_driver {
+
+    static DB_driver instance() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     Connection con = null;
+    Franquicia franquicia = null;
     
     String[] DBsql = {
 		"CREATE TABLE IF NOT EXISTS TIENDA (\n"
@@ -192,7 +198,12 @@ public class DB_driver {
 	/*
     Insert TIENDA
     */
-    private static void insertTienda(Connection con, String name, String provincia, String ciudad){
+    
+    public void insertTienda (Tienda t){
+    insertTienda(con, t.getName(),t.getCiudad(),t.getProvincia());
+    }
+    
+    private  void insertTienda(Connection con, String name, String provincia, String ciudad){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
             String sql = "INSERT INTO TIENDA(TIENDA_name, TIENDA_provincia, TIENDA_ciudad) VALUES(?,?,?)";
@@ -212,6 +223,10 @@ public class DB_driver {
 	/*
    Insert CLIENTE
     */
+    public void  insertCliente(Cliente c){
+        insertCliente(con, c.getName(),c.getApellido(),c.getEmail());
+    }
+    
     private static void insertCliente(Connection con, String name, String apellido, String email){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
@@ -233,7 +248,12 @@ public class DB_driver {
 	/*
    Insert EMPLEADO
     */
-    private static void insertEmpleado(Connection con, String name, String apellido){
+    
+    public void insertEmpleado(Empleado e){
+        insertEmpleado(con, e.getName(),e.getApellidos());
+    }
+    
+    private void insertEmpleado(Connection con, String name, String apellido){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
             String sql = "INSERT INTO EMPLEADO(EMPLEADO_name, EMPLEADO_apellido) VALUES(?,?)";
@@ -253,7 +273,11 @@ public class DB_driver {
     /*
    Insert PRODUCTO
     */
-    private static void insertProducto(Connection con, String name, float price, String description){
+    public void insertProducto (Producto p){
+        insertProducto(con , p.getName(),p.getPrice(),p.getDescription());
+    }
+    
+    private  void insertProducto(Connection con, String name, float price, String description){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
             String sql = "INSERT INTO PRODUCTO(PRODUCTO_name, PRODUCTO_price, PRODUCTO_description) VALUES(?,?,?)";
@@ -273,7 +297,7 @@ public class DB_driver {
 	    /*
    Insert TIENDA_PRODUCTO
     */
-    private static void insertTiendaProducto(Connection con,int id_Tienda, int id_Producto,int stock ){
+    private  void insertTiendaProducto(Connection con,int id_Tienda, int id_Producto,int stock ){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
             String sql = "INSERT INTO TIENDA_PRODUCTO(TIENDA_id, PRODUCTO_id, stock) VALUES(?,?,?)";
@@ -582,37 +606,312 @@ public class DB_driver {
     }
 
     private void cargarClientes(Connection con) {
-        try
-        {
+        if (franquicia != null){
+            try
+            {
 
-            Statement statement = con.createStatement();
+                Statement statement = con.createStatement();
 
-            //Probamos a realizar unha consulta
-            ResultSet rs = statement.executeQuery("select * from CLIENTE");
-            
-            while(rs.next()){
-               new Cliente ( rs.getInt("CLIENTE_id"),
-                             rs.getString("CLIENTE_name"),
-                             rs.getString("CLIENTE_apellido"),
-                             rs.getString("CLIENTE_email")
-               );
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from CLIENTE");
+
+                while(rs.next()){
+                
+                        Cliente c = new Cliente( 
+                                rs.getString("CLIENTE_name"),
+                                rs.getString("CLIENTE_apellido"),
+                                rs.getString("CLIENTE_email")
+                            );
+                           c.setId(rs.getInt("CLIENTE_id"));
+                        franquicia.addClient(c);
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
             }
         }
-        catch(SQLException e){
-            System.err.println(e.getMessage());
+        else {
+         System.out.println(" Franquicia no definida");
         }
     }
 
     private void cargarEmpleados(Connection con) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (franquicia != null){
+            try
+            {
+
+                Statement statement = con.createStatement();
+
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from EMPLEADO");
+
+                while(rs.next()){
+                
+                       Empleado em = new Empleado( 
+                                rs.getString("EMPLEADO_name"),
+                                rs.getString(" EMPLEADO_apellido")
+                            );
+                            em.setId(rs.getInt("EMPLEADO_id"));  
+                
+                      franquicia.addEmpleado(em);
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        }
+        else {
+         System.out.println(" Franquicia no definida");
+        }
     }
+    
 
     private void cargarProductos(Connection con) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       if (franquicia != null){
+            try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from PRODUCTO");
+                while(rs.next()){
+               
+                        Producto p = new Producto( 
+                                rs.getString("PRODUCTO_name"),
+                                rs.getFloat(" PRODUCTO_price"),
+                                rs.getString("PRODUCTO_description")
+                        );
+                        p.setId(rs.getInt("PRODUCTO_id"));
+                        franquicia.addProducto(p);
+                        
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        }
+        else {
+         System.out.println(" Franquicia no definida");
+        }
     }
 
     private void cargarTiendas(Connection con) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // creamos las tiendas
+        if (franquicia != null){
+            try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from TIENDA");
+                while(rs.next()){
+                
+                        Tienda t = new Tienda( 
+                                rs.getString("TIENDA_name"),
+                                rs.getString(" TIENDA_provincia"),
+                                rs.getString("TIENDA_ciudad")
+                            );
+                        t.setId(rs.getInt("TIENDA_id"));
+                       franquicia.getMapTienda().put(t.getName(),t );
+                } 
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+            for (Tienda t : franquicia.getMapTienda().values()){
+                //creamos lisProd dentro de la tienda
+                try
+                {
+                    Statement statement = con.createStatement();
+                    //recuperamos el id de los productos de la tienda
+                    ResultSet rs = statement.executeQuery("select PRODUCTO_name, stock from TIENDA_PRODUCTO where TIENDA_id = "+t.getId()+" )");
+                    // añadimos los productos a la tienda
+                    while(rs.next()){
+                   Producto p =getProducto(con, rs.getString("PRODUCTO_name"),rs.getInt("stock"));
+                     t.getMapProd().put(p.getName(),p);
+                    }
+                }
+                catch(SQLException e){
+                    System.err.println(e.getMessage());
+                }
+                 //creamos lisEmpleado dentro de la tienda
+                try
+                {
+                    Statement statement = con.createStatement();
+                    //recuperamos el id de los productos de la tienda
+                    ResultSet rs = statement.executeQuery("select EMPLEADO_name, nHoras from TIENDA_EMPLEADO where TIENDA_id = "+t.getId()+" )");
+                    // añadimos los productos a la tienda
+                    while(rs.next()){
+                    Empleado em =getEmpleado(con, rs.getString("EMPLEADO_name"),rs.getFloat("nHoras"));
+                    t.getMapEmp().put(em.getName(),em);
+                    }
+                }
+                catch(SQLException e){
+                    System.err.println(e.getMessage());
+                } 
+                
+            }    
+        }
+        else {
+         System.out.println(" Franquicia no definida");
+        }
     }
+    
+    private Producto getProducto(Connection con, String name , int stock) {
+         Producto p= null;
+            try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_name = "+name);
+                while(rs.next()){
+                    p = new Producto( 
+                                     rs.getString("PRODUCTO_name"),
+                                     rs.getFloat(" PRODUCTO_price"),
+                                     rs.getString("PRODUCTO_description")
+                                 );
+                    p.setId(rs.getInt("PRODUCTO_id"));
+                    p.setStock(stock);
+                      
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return p;
+     }
+     
+    private Producto getProducto(Connection con, String name ) {
+         Producto p= null;
+            try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_name = "+name);
+                while(rs.next()){
+                    p = new Producto( 
+                                     rs.getString("PRODUCTO_name"),
+                                     rs.getFloat(" PRODUCTO_price"),
+                                     rs.getString("PRODUCTO_description")
+                                 );
+                    p.setId(rs.getInt("PRODUCTO_id"));
+                      
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return p;
+     }
+     
+
+     private Empleado getEmpleado(Connection con, String name , float nhoras) {
+         Empleado em = null;
+           try
+            {
+                Statement statement = con.createStatement();
+
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_name = "+name );
+                while(rs.next()){
+                    em =new Empleado( 
+                                rs.getString("EMPLEADO_name"),
+                                rs.getString(" EMPLEADO_apellido")
+                        );
+                    em.setId(rs.getInt("EMPLEADO_id"));
+                    em.setnHoras(nhoras);
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return em;
+     }
+     
+      private Empleado getEmpleado(Connection con, String name) {
+         Empleado em = null;
+           try
+            {
+
+                Statement statement = con.createStatement();
+
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_name = "+name );
+
+                while(rs.next()){
+                    em =new Empleado( 
+                                rs.getString("EMPLEADO_name"),
+                                rs.getString(" EMPLEADO_apellido")
+                        );
+                    em.setId(rs.getInt("EMPLEADO_id"));
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return em;
+     }
+
+    private int getTiendaId(String name){
+     int tID = -1;
+           try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from TIENDA  where TIENDA_name = "+name );
+                while(rs.next()){  
+                    tID = rs.getInt("TIENDA_id");
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return tID;
+    }  
+    
+    private int getProductoId(String name){
+         int pID = -1;
+           try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_name = "+name );
+                while(rs.next()){  
+                    pID = rs.getInt("PRODUCTO_id");
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return pID;
+    } 
+    
+    private int getEmpleadoId(String name){
+     int emplID = -1;
+           try
+            {
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_name = "+name );
+                while(rs.next()){
+                    emplID= rs.getInt("EMPLEADO_id");
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e.getMessage());
+            }
+        return emplID;
+    }  
+      
+    public void insertProductoATienda(Tienda t, Producto producto) {
+        insertTiendaProducto(con, getTiendaId(t.getName()), getProductoId(producto.getName()),0 );      
+    }
+
+    public void insertEmpleadoATiendaHoras(Tienda t, Empleado em, float nHoras) {
+       insertTiendaEmpleado(con, getTiendaId(t.getName()), getEmpleadoId(em.getName()),nHoras);
+    }
+
+    public void insertProductoATiendaStock(Tienda t, Producto p, int stock) {
+       insertTiendaProducto(con, getTiendaId(t.getName()), getProductoId(p.getName()),stock );  
+    }
+    
 }//fin DB
 
