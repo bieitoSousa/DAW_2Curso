@@ -23,12 +23,19 @@
  */
 package com.bieitosousa.ad03_db;
 
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 /**
  *
  * @author bieito
  */
 public class Empleado {
-    private int id; 
+    private DB_driver db = DB_driver.instance();
+    private int id = -1; 
     private String name;        
     private String apellidos;        
     private float nHoras;
@@ -39,6 +46,9 @@ public class Empleado {
     }
 
     public int getId() {
+        if (id==-1){
+        cargarId();
+        }
         return id;
     }
 
@@ -62,7 +72,8 @@ public class Empleado {
         this.apellidos = apellidos;
     }
 
-    public float getnHoras() {
+    public float getnHoras(Tienda t) {
+        cargarHoras(t);
         return nHoras;
     }
 
@@ -72,9 +83,55 @@ public class Empleado {
 
     @Override
     public String toString() {
-        return "Empleado{" + "id=" + id + ", name=" + name + ", apellidos=" + apellidos + ", nHoras=" + nHoras + '}';
+        return "Empleado{" + "id=" + id + ", name=" + name + ", apellidos=" + apellidos +  '}';
     }
     
+    public String toString(Tienda t) {
+        return "Empleado{" + "id=" + id + ", name=" + name + ", apellidos=" + apellidos + ", nHoras=" + getnHoras(t) + '}';
+    }
     
+     //      ==== OPERACIONES LECTURA  SOBRE DB ======== \\
+     /**************************************************************
+     * Recupera el id del Objeto : con una conslta en la DB  
+     ****************************************************************/
+    
+    
+    private void cargarId(){
+     int emplID = -1;
+           try
+            {
+                Connection con = DB_driver.getConn();
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_name = "+this.name );
+                while(rs.next()){
+                    emplID= rs.getInt("EMPLEADO_id");
+                }
+             id= emplID;  
+            }catch(SQLException e){
+                System.err.println(e.getMessage());
+             }finally{
+            DB_driver.finishDB();
+            }
+    }  
+
+    private void cargarHoras(Tienda t) {
+     try{
+            Connection con = db.getConn();
+            Statement statement = con.createStatement();
+
+            //Probamos a realizar unha consulta
+            ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO where TIENDA_id = " +t.getId() );
+            while(rs.next()){
+                  
+                     this.id =  rs.getInt("EMPLEADO_id");
+                     this.nHoras = rs.getFloat("nHoras");
+            }
+        }catch(SQLException e){
+            System.err.println(e.getMessage());
+        }finally{  
+            DB_driver.finishDB();
+        }   
+    }
     
 }

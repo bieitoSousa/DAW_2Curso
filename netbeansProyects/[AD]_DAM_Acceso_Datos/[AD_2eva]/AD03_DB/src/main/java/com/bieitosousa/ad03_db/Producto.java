@@ -23,13 +23,20 @@
  */
 package com.bieitosousa.ad03_db;
 
+import static com.bieitosousa.ad03_db.DB_driver.con;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 /**
  *
  * @author bieito
  */
 public class Producto {
+private DB_driver db = DB_driver.instance();
 private  int stock;
-private int id;
+private int id = -1;
 private String name;
 private float price;
 private String description;
@@ -43,12 +50,20 @@ private String description;
     public int getStock() {
         return stock;
     }
-
+    
+    public int getStock(Tienda t) {
+    cargarStock(t);
+        return stock;
+    }
+    
     public void setStock(int stock) {
         this.stock = stock;
     }
 
     public int getId() {
+         if (id==-1){
+        cargarId();
+        }
         return id;
     }
 
@@ -82,7 +97,52 @@ private String description;
 
     @Override
     public String toString() {
-        return "Producto{" + "stock=" + stock + ", id=" + id + ", name=" + name + ", price=" + price + ", description=" + description + '}';
+        return "Producto{"+ "name=" + name + ", price=" + price + ", description=" + description + '}';
     }
-   
+    public String toString(Tienda t) {
+        return "Producto{" + "stock=" + getStock(t) + ", id=" + id + ", name=" + name + ", price=" + price + ", description=" + description + '}';
+    }
+    
+    //      ==== OPERACIONES LECTURA  SOBRE DB ======== \\
+     /**************************************************************
+     * Recupera el id del Objeto : con una conslta en la DB  
+     ****************************************************************/
+    
+    
+    private void cargarId(){
+         int pID = -1;
+           try
+            {
+                Connection con = DB_driver.getConn();
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_name = "+this.name );
+                while(rs.next()){  
+                    pID = rs.getInt("PRODUCTO_id");
+                }
+            id= pID;    
+            }catch(SQLException e){
+                System.err.println(e.getMessage());
+            }finally{
+            DB_driver.finishDB();
+            }
+    } 
+
+    private void cargarStock(Tienda t) {
+        try{
+            Connection con = db.getConn();
+            Statement statement = con.createStatement();
+            ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO where TIENDA_id = " +t.getId() );
+            while(rs.next()){
+                int[] arry = {
+                    this.id = rs.getInt("PRODUCTO_id"),
+                    this.stock = rs.getInt("stock")
+                };
+          }
+        }catch(SQLException e){
+            System.err.println(e.getMessage());
+        }finally{   
+            DB_driver.finishDB();
+        }
+    }
 }

@@ -23,6 +23,10 @@
  */
 package com.bieitosousa.ad03_db;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.HashMap;
 
@@ -30,39 +34,30 @@ import java.util.HashMap;
  *
  * @author bieito
  */
-public class Tienda {
+public class Tienda extends Franquicia {
     private HashMap<String, Producto> mapProd = new HashMap<String, Producto>();
     private HashMap<String, Empleado> mapEmp = new HashMap<String, Empleado>(); 
-    private int id;
+    private int id =-1;
     private String name;
     private String provincia;
-    private String ciudad;        
+    private String ciudad;
+    private boolean opStock;
+    private boolean opHoras;
+   
 
     public Tienda( String name, String provincia, String ciudad) {
+        super();
         this.name = name;
         this.provincia = provincia;
         this.ciudad = ciudad;
     }
+    
+ /***    ... METODOS PUBLICOS ...    ***/
+    
+     /**************************************************************
+     * METODOS GET/SET atributos del constructor
 
-    public HashMap<String, Producto> getMapProd() {
-        return mapProd;
-    }
-
-    public void setMapProd(HashMap<String, Producto> mapProd) {
-        this.mapProd = mapProd;
-    }
-
-    public HashMap<String, Empleado> getMapEmp() {
-        return mapEmp;
-    }
-
-    public void setMapEmp(HashMap<String, Empleado> mapEmp) {
-        this.mapEmp = mapEmp;
-    }
-
-    public int getId() {
-        return id;
-    }
+     ***************************************************************/
 
     public void setId(int id) {
         this.id = id;
@@ -91,11 +86,305 @@ public class Tienda {
     public void setCiudad(String ciudad) {
         this.ciudad = ciudad;
     }
+     /**************************************************************
+     * METODOS toString
 
+     ***************************************************************/
     @Override
     public String toString() {
         return "Tienda{" + "mapProd=" + mapProd + ", mapEmp=" + mapEmp + ", id=" + id + ", name=" + name + ", provincia=" + provincia + ", ciudad=" + ciudad + '}';
     }
+
+    /**************************************************************
+     * METODOS GET
+     # evalua super.op{name} : determina si hubo operaciones de escritura en la DB 
+     # true : Carga los datos de la DB.
+     # false : Carga los datos de la memoria.
+     *  = getMapEmp     Devuelve los empleados de la tienda
+     *  = getMapProd    Devuelve los productos de la tienda 
+     *  = getId     Recupera el id de la tienda
+     ****************************************************************/
+    
+    public HashMap<String, Producto> getMapProd() {
+        if(opProd){
+        cargarProductos();
+        }
+        return mapProd;
+    }
+    
+    public HashMap<String, Empleado> getMapEmp() {
+        if(opEmp){
+        cargarEmpleados();
+        }
+        return mapEmp;
+    }
+    
+        public int getId() {
+        if (id==-1){
+        cargarId();
+        }
+        return id;
+    }
+
+     /**************************************************************
+     * METODOS SET
+     # guarda los datos en memoria
+     *  = setMapEmp
+     *  = setMapProd
+         *
+     ****************************************************************/
+    public void setMapProd(HashMap<String, Producto> mapProd) {
+        this.mapProd = mapProd;
+    }
+
+    public void setMapEmp(HashMap<String, Empleado> mapEmp) {
+        this.mapEmp = mapEmp;
+    }
+    
+     /**************************************************************
+     * METODOS ADD
+     # llama a un metodo privado para inserta  los registros datos en la DB
+     *  = addProducto => inserta Producto_id Tienda_id 
+     *  = addStock    => inserta Producto_id Tienda_id stock
+     *  = addHoras    => inserta Producto_id Empleado_id nHoras
+     # En el metodo privado se determina op{name} = true 
+     *      se ha escrito en la DB 
+     ****************************************************************/    
+    
+    public void addProducto( Producto p ){
+    if (super.mapProd.get(p.getName())!= null){
+        int stock = p.getStock(this);
+        if (stock == 0) stock = 1; 
+        insertTiendaProducto(p,stock);
+    }else{
+       System.out.println("Producto "+p.getName()+" No es parte de la Franquicia");
+       }
+    }  
+
+    public void addEmpleado( Empleado em ){
+     if (super.mapEmp.get(em.getName())!= null){
+         insertTiendaEmpleado(em);
+        }else{
+               System.out.println("Empleado "+em.getName()+" No es parte de la Franquicia");
+           }
+    }
+        
+    public void addHoras(  Empleado em, float nHoras) {
+        if (getMapEmp().get(em.getName())!= null){
+            nHoras = nHoras + em.getnHoras(this);
+            updateTiendaEmpleado( em,  nHoras);
+        }else{
+               System.out.println("Empleado "+em.getName()+" No es parte de la Franquicia");
+           }
+    }  
+    public void addStock(  Producto p, int stock) {
+        if (getMapProd().get(p.getName())!= null){
+        stock = stock + p.getStock(this);    
+        updateTiendaProducto(p,stock);
+       }else{
+           System.out.println("Producto "+p.getName()+" No es parte de la Franquicia");
+       }
+    }       
+        
+      /**************************************************************
+     * METODOS VIEW
+     * VIEW{Name} recorre e imprimir los mapas 
+     *  = mapEmp
+     *  = mapCli
+     *  = mapProd
+     *  = mapTienda
+     * ===================
+     *  evalua : op{Name} = true --> Los datos se han modificado :
+     *                               \-> hay que cargar los datos en memoria. 
+     *                       false --> Los datos no se modificaron :
+     *                               \-> no hay que cargar datos en memoria.
+     ****************************************************************/
+    
+    public void viewProductos(){
+        if (opStock){
+            cargarProductos();
+        }
+        for (Producto p : mapProd.values()){
+            System.out.println( p.toString(this) );
+        }
+    }
+    public void viewEmpleados(){
+        if (opHoras){
+            cargarEmpleados();
+        }
+        for (Empleado em : mapEmp.values()){
+            System.out.println(em.toString(this) );
+        }
+    }
+    
+    
+    
+     //      ==== OPERACIONES LEECTURA  SOBRE DB ======== \\
+     /**************************************************************
+     *  = getTiendaId --> Recupera el id del Objeto : con una consulta en la DB  
+     ****************************************************************/
+    
+    private void cargarId() {
+        int tID = -1;
+           try
+            {
+                Connection con = db.getConn();
+                Statement statement = con.createStatement();
+                //Probamos a realizar unha consulta
+                ResultSet rs = statement.executeQuery("select * from TIENDA  where TIENDA_name = "+this.name );
+                while(rs.next()){  
+                    tID = rs.getInt("TIENDA_id");
+                }
+            this.id= tID;    
+            }catch(SQLException e){
+                System.err.println(e.getMessage());
+            }finally{
+            DB_driver.finishDB();
+            }
+    }
+
+    private void cargarProductos() {
+         ArrayList<int[]> listInfoProd = cargarProductosInfo();
+          if (listInfoProd.size()>0){
+            for (int[]  infoProducto : listInfoProd){
+                try
+                    {
+                        Connection con = db.getConn();
+                        Statement statement = con.createStatement();
+                        //Probamos a realizar unha consulta
+                        ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_id  = "+infoProducto[0] );
+                        while(rs.next()){
+
+                                Producto p = new Producto( 
+                                        rs.getString("PRODUCTO_name"),
+                                        rs.getFloat(" PRODUCTO_price"),
+                                        rs.getString("PRODUCTO_description")
+                                );
+                                p.setId(rs.getInt("PRODUCTO_id"));
+                                p.setStock(infoProducto[1]);
+                                mapProd.put(p.getName(),p);
+                        }
+                    }
+                    catch(SQLException e){
+                        System.err.println(e.getMessage());
+                    }finally{
+                    DB_driver.finishDB();
+                    opProd = false;
+                    }
+            }
+         }else{
+             System.out.println(" Error ... No se han cargado los Empleados");
+         }   
+    }
+
+    private void cargarEmpleados() {
+         ArrayList<float[]> listInfoEmp = cargarEmpleadosInfo();
+         if (listInfoEmp.size()>0){
+            for (float[]  infoEmpleado : listInfoEmp){
+                try {
+                        Connection con = db.getConn();
+                        Statement statement = con.createStatement();    
+                        ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_id = " +(int)infoEmpleado[0] );
+                        while(rs.next()){
+                               Empleado em = new Empleado( 
+                                        rs.getString("EMPLEADO_name"),
+                                        rs.getString(" EMPLEADO_apellido")
+                                    );
+                                    em.setId(rs.getInt("EMPLEADO_id")); 
+                                    em.setnHoras(infoEmpleado[1]);
+                            mapEmp.put(em.getName(),em);   
+                        }
+                    }catch(SQLException e){
+                        System.err.println(e.getMessage());
+                    }finally{
+                        opEmp = false;    
+                        DB_driver.finishDB();
+                    }
+            }
+         }else{
+             System.out.println(" Error ... No se han cargado los Empleados");
+         }
+    }
+
+    private ArrayList<int[]> cargarProductosInfo() {
+        ArrayList<int[]> list = new ArrayList<int[]>();
+            try{
+                        Connection con = db.getConn();
+                        Statement statement = con.createStatement();
+                        ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO where TIENDA_id = " +this.getId() );
+                        while(rs.next()){
+                            int[] arry = {
+                                 rs.getInt("PRODUCTO_id"),
+                                 rs.getInt("stock")
+                            };
+                         list.add(arry);  
+                        }
+                    }catch(SQLException e){
+                        System.err.println(e.getMessage());
+                    }finally{
+                        opEmp = false;    
+                        DB_driver.finishDB();
+                    }
+        return list;
+    }
+
+    private ArrayList<float[]> cargarEmpleadosInfo() {
+        ArrayList<float[]> list = new ArrayList<>();   
+            try{
+                        Connection con = db.getConn();
+                        Statement statement = con.createStatement();
+
+                        //Probamos a realizar unha consulta
+                        ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO where TIENDA_id = " +this.getId() );
+                        while(rs.next()){
+                              float[] arry = {
+                                 (float)rs.getInt("EMPLEADO_id"),
+                                 rs.getFloat("nHoras")
+                            };
+                         list.add(arry);  
+                        }
+                    }catch(SQLException e){
+                        System.err.println(e.getMessage());
+                    }finally{
+                        opEmp = false;    
+                        DB_driver.finishDB();
+                    }
+        return list;
+    }
+        //      ==== OPERACIONES ESCRITURA  SOBRE DB ======== \\
+      /**************************************************************
+     * insert{Name} llama a el drive pasandole un objeto 
+     *                      el drive --> Escribe el objeto en la dB  
+     *  insertTiendaEmpleado   =>   Escribe en la tabla  TIENDA_EMPLEADO
+     *                              los datos : TIENDA_id EMPLEADO_id nHoras
+     *  insertTiendaProducto   =>   Escribe en la tabla  TIENDA_PRODUCTO
+     *                              los datos : TIENDA_id PRODUCTO_id stock
+     *  updateTiendaEmpleado   =>   Escribe en la tabla  TIENDA_EMPLEADO
+     *                              los datos :  nHoras
+     *  updateTiendaProducto   =>   Escribe en la tabla  TIENDA_PRODUCTO
+     *                              los datos :  stock
+     * ===================
+     * op{Name} = true --> Los datos se han modificado desde la ultima carga en memoria
+     ****************************************************************/
+    
+    private void insertTiendaEmpleado(  Empleado em) {
+        db.insertTiendaEmpleado(this.getId(),em.getId());
+         this.opHoras=true;
+    }
+        
+    private void insertTiendaProducto(  Producto p,  int stock) {
+        db.insertTiendaProducto(this.getId(),p.getId(),stock);
+         this.opStock=true;
+    } 
+    private void updateTiendaEmpleado(  Empleado em, float nHoras) {
+        db.insertTiendaEmpleado(this.getId(),em.getId(),nHoras);
+         this.opHoras=true;
+    }
+        
+    private void updateTiendaProducto(  Producto p,  int stock) {
+        db.insertTiendaProducto(this.getId(),p.getId(),stock);
+         this.opStock=true;
+    } 
     
     
 }
