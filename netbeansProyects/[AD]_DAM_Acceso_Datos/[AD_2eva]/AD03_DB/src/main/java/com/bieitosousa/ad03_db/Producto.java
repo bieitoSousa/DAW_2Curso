@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 /**
  *
@@ -97,10 +98,37 @@ private String description;
 
     @Override
     public String toString() {
-        return "Producto{"+ "name=" + name + ", price=" + price + ", description=" + description + '}';
+        return "Producto{ id=" + id+ "name=" + name + ", price=" + price + ", description=" + description + '}';
     }
     public String toString(Tienda t) {
         return "Producto{" + "stock=" + getStock(t) + ", id=" + id + ", name=" + name + ", price=" + price + ", description=" + description + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Producto other = (Producto) obj;
+        if (Float.floatToIntBits(this.price) != Float.floatToIntBits(other.price)) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
     }
     
     //      ==== OPERACIONES LECTURA  SOBRE DB ======== \\
@@ -129,16 +157,14 @@ private String description;
     } 
 
     private void cargarStock(Tienda t) {
+        this.stock = -1;
         try{
             Connection con = db.getConn();
             Statement statement = con.createStatement();
-            ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO where TIENDA_id = " +t.getId() );
+            ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO where TIENDA_id = " +t.getId()+" and PRODUCTO_id = "+this.getId() );
             while(rs.next()){
-                int[] arry = {
-                    this.id = rs.getInt("PRODUCTO_id"),
-                    this.stock = rs.getInt("stock")
-                };
-          }
+                    this.stock = rs.getInt("stock");
+           }
         }catch(SQLException e){
             System.err.println(e.getMessage());
         }finally{   

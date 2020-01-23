@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 /**
  *
@@ -89,6 +90,33 @@ public class Empleado {
     public String toString(Tienda t) {
         return "Empleado{" + "id=" + id + ", name=" + name + ", apellidos=" + apellidos + ", nHoras=" + getnHoras(t) + '}';
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Empleado other = (Empleado) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.apellidos, other.apellidos)) {
+            return false;
+        }
+        return true;
+    }
     
      //      ==== OPERACIONES LECTURA  SOBRE DB ======== \\
      /**************************************************************
@@ -116,15 +144,14 @@ public class Empleado {
     }  
 
     private void cargarHoras(Tienda t) {
-     try{
+     this.nHoras = -1;
+        try{
             Connection con = db.getConn();
             Statement statement = con.createStatement();
 
             //Probamos a realizar unha consulta
-            ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO where TIENDA_id = " +t.getId() );
+            ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO where TIENDA_id = " +t.getId()+ " and EMPLEADO_id = "+ this.getId() );
             while(rs.next()){
-                  
-                     this.id =  rs.getInt("EMPLEADO_id");
                      this.nHoras = rs.getFloat("nHoras");
             }
         }catch(SQLException e){

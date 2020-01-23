@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package com.bieitosousa.ad03_db;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 
 public class DB_driver {
 
-    
+    protected File dbHome;
     public static Connection  con = null;
     public static DB_driver  db = null;
     private static String[] DBsql = {
@@ -134,7 +135,7 @@ public class DB_driver {
         try
         {
             connection = DriverManager.getConnection("jdbc:sqlite:" + filename);
-            System.out.println("Conexión realizada con éxito");
+            //System.out.println("Conexión realizada con éxito");
             return connection;
         }
         catch(SQLException e){
@@ -148,7 +149,7 @@ public class DB_driver {
         try{
             if(connection != null){
                 connection.close();
-                System.out.println("Desconexión realizada con éxito");
+               //System.out.println("Desconexión realizada con éxito");
             }
         }
         catch(SQLException e){
@@ -171,7 +172,6 @@ public class DB_driver {
     protected static DB_driver instance() {
         if (db == null){
             db = new DB_driver(); 
-            startDB();
             getData();
             finishDB();
         }
@@ -181,14 +181,14 @@ public class DB_driver {
     private static void getData(){
         if(!dbExist()) {// si no esta creada la base de datos la creamos   
           for(int i=0; i < DBsql.length;i++){
-                            createTable(con,DBsql[i]);
+                            createTable(getConn(),DBsql[i]);
                     }
         }
     }
      private static boolean dbExist(){
          boolean exist = false;
          try{
-            Statement statement = con.createStatement();
+            Statement statement = getConn().createStatement();
             ResultSet rs = statement.executeQuery("SELECT name, sql FROM sqlite_master WHERE type='table'");
             if(rs.next()){
                 exist = true;
@@ -235,13 +235,13 @@ public class DB_driver {
        deleteTienda(getConn(),t.getName()); 
     }
     public void  deleteProducto(Producto p){
-       deleteTienda(getConn(),p.getName()); 
+       deleteProducto(getConn(),p.getName()); 
     }
     public void  deleteEmpleado (Empleado em){
-       deleteTienda(getConn(),em.getName()); 
+       deleteEmpleado(getConn(),em.getName()); 
     }
     public void  deleteCliente (Cliente cli){
-       deleteTienda(getConn(),cli.getName()); 
+       deleteCliente(getConn(),cli.getName()); 
     }
     public void  deleteTiendaProducto(Tienda t, Producto p){
        deleteTiendaProducto(getConn(),t.getId(), p.getId()); 
@@ -262,18 +262,18 @@ public class DB_driver {
      ***********************************************************/
     
     public void insertTienda (Tienda t){
-    insertTienda(con, t.getName(),t.getCiudad(),t.getProvincia());
+    insertTienda(getConn(), t.getName(),t.getProvincia(),t.getCiudad());
     }
     public void  insertCliente(Cliente c){
-        insertCliente(con, c.getName(),c.getApellido(),c.getEmail());
+        insertCliente(getConn(), c.getName(),c.getApellido(),c.getEmail());
     }
 
     public void insertEmpleado(Empleado e){
-        insertEmpleado(con, e.getName(),e.getApellidos());
+        insertEmpleado(getConn(), e.getName(),e.getApellidos());
     }
 
     public void insertProducto (Producto p){
-        insertProducto(con , p.getName(),p.getPrice(),p.getDescription());
+        insertProducto(getConn() , p.getName(),p.getPrice(),p.getDescription());
     }
     public void insertTiendaProducto(int id_Tienda, int id_Producto,int stock ){
     Connection con = getConn();    
@@ -336,12 +336,11 @@ public class DB_driver {
          }  
     }
     
-    private static void insertCliente(Connection con, String name, String apellido, String email){
+    private  void insertCliente(Connection con, String name, String apellido, String email){
         try{
             //Fixate que no código SQL o valor do nome e "?". Este valor engadiremolo despois
             String sql = "INSERT INTO CLIENTE(CLIENTE_name, CLIENTE_apellido, CLIENTE_email) VALUES(?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(sql);
-
             //Aquí e cando engadimos o valor do nome
             pstmt.setString(1, name);
 			pstmt.setString(2, apellido);
@@ -445,7 +444,7 @@ public class DB_driver {
 			pstmt.setInt(2, idEmpleado);
             pstmt.setFloat(3, nHoras);
 			pstmt.executeUpdate();
-            System.out.println("Tienda ->> Empleado"+"["+ nHoras + "]");
+            System.out.println("Tienda ->> Empleado"+"["+ nHoras + "] acceso idTienda{"+idTienda+"} idEmpleado{"+idEmpleado+"}");
         }
         catch(SQLException e){
             System.out.println(e.getMessage()+ "ERROR INSERT {{ Tienda ->> Empleado"+"["+ nHoras + "] }}");

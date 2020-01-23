@@ -23,6 +23,8 @@
  */
 package com.bieitosousa.ad03_db;
 
+import java.util.Objects;
+
 /**
  *
  * @author bieito
@@ -74,6 +76,33 @@ private String email;
     @Override
     public String toString() {
         return "Cliente{" + "id=" + id + ", name=" + name + ", apellido=" + apellido + ", email=" + email + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Cliente other = (Cliente) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.apellido, other.apellido)) {
+            return false;
+        }
+        return true;
     }
     
    

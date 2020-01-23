@@ -40,13 +40,21 @@ class Franquicia {
     HashMap<String, Producto> mapProd = new HashMap<String, Producto>();
     HashMap<String, Empleado> mapEmp = new HashMap<String, Empleado>();
     HashMap<String, Cliente> mapCli = new HashMap<String, Cliente>();
+    private static Franquicia f = null;
     private String name;
     protected DB_driver db = DB_driver.instance();
-    protected boolean opCli = true;//operaciones de escritura sobre Cliente
-    protected boolean opTi = true;//operaciones de escritura sobre Tienda
-    protected boolean opEmp = true;//operaciones de escritura sobre Empleado
-    protected boolean opProd = true;//operaciones de escritura sobre Producto
+    protected static boolean opCli = true;//operaciones de escritura sobre Cliente
+    protected static boolean opTi = true;//operaciones de escritura sobre Tienda
+    protected static boolean opEmp = true;//operaciones de escritura sobre Empleado
+    protected static boolean opProd = true;//operaciones de escritura sobre Producto
 
+    public static Franquicia instance(){
+        if (f == null){
+            f= new Franquicia();
+        }
+        return f;
+    }
+    
     
     
 /***    ... METODOS PUBLICOS ...    ***/
@@ -133,43 +141,95 @@ class Franquicia {
     /**************************************************************
      * METODOS ADD
      # llama a un metodo privado para inserta  los Objetos datos en la DB
-     *  = addMapEmp => Obj Empleado
-     *  = addMapCli => Obj Cliente
-     *  = addMapProd    => Obj Producto
-     *  = addMapTienda  => Obj Tienda
+     *  = addEmpleado => Obj Empleado
+     *  = addClient => Obj Cliente
+     *  = addProdducto    => Obj Producto
+     *  = addTienda  => Obj Tienda
      # En el metodo privado se determina op{name} = true 
      *      se ha escrito en la DB 
      ****************************************************************/
     
     public void addClient(Cliente cliente) {
-        insertCliente(cliente);
+        Cliente cli = getMapCli().get(cliente.getName());
+        if ( cli == null || ( cli != null && !cli.equals(cliente)) ) {
+            insertCliente(cliente);
+        } else {
+             System.out.println("El cliente "+cli.toString() +" ya existe, introduzca un nuevo cliente");
+        }
     }
     public void addEmpleado(Empleado empleado) {
-         insertEmpleado(empleado);
+        Empleado em = getMapEmp().get(empleado.getName());
+            if ( em == null || ( em != null && !em.equals(empleado) )) {
+                insertEmpleado(empleado);             
+            } else { 
+             System.out.println("El Empleado "+em.toString() +" ya existe, introduzca un nuevo Empleado");
+            }
     }
     public void addProducto(Producto producto) {
-        insertProducto(producto);
+        Producto p = getMapProd().get(producto.getName());
+        if ( p == null || ( p != null && ! p.equals(producto) )) {
+            insertProducto(producto); 
+            } else { 
+            System.out.println("El producto "+p.toString() +" ya existe, introduzca un nuevo Producto");
+        }
     }
     public void addTienda(Tienda tienda) {
-       insertTienda(tienda);      
+        Tienda t = getMapTienda().get(tienda.getName());
+        if ( t == null || ( t != null && !t.equals(tienda) )) {
+            if(t!=null){
+                System.out.println(" name  => "+t.getName()+" ; "+tienda.getName());
+                System.out.println(" ciudad  => "+t.getCiudad()+" ; "+tienda.getCiudad());
+                System.out.println(" provincia  => "+t.getProvincia()+" ; "+tienda.getProvincia());
+            }
+            insertTienda(tienda);
+        } else {
+            System.out.println("La tienda "+t.toString() +" ya existe, introduzca una nueva Tienda");   
+        }
     }
+        /**************************************************************
+     * METODOS DEL
+     # llama a un metodo privado para eliminar  los Objetos datos en la DB
+     *  = delEmpleado => Obj Empleado
+     *  = delClient => Obj Cliente
+     *  = delProducto    => Obj Producto
+     *  = delTienda  => Obj Tienda
+     # En el metodo privado se determina op{name} = true 
+     *      se ha escrito en la DB 
+     ****************************************************************/
     
     
     public void delClient(Cliente cliente) {
-        deleteCliente(cliente);
+        Cliente cli = getMapCli().get(cliente.getName());
+        if (cli != null && cli.equals(cliente) ) {
+            deleteCliente(cliente);
+        } else {
+         System.out.println("seleccione un Cliente de la Franquicia");
+        }
     }
     public void delEmpleado(Empleado empleado) {
-         deleteEmpleado(empleado);
+        Empleado em = getMapEmp().get(empleado.getName());
+        if ( em != null && em.equals(empleado) ) {
+            deleteEmpleado(empleado);
+         } else {
+            System.out.println("seleccione un Empleado de la Franquicia");
+        }
     }
     public void delProducto(Producto producto) {
-        deleteProducto(producto);
+        Producto p = getMapProd().get(producto.getName());
+        if ( p != null && p.equals(producto) ) {
+            deleteProducto(producto);
+        }else{
+            System.out.println("seleccione un Producto de la Franquicia");
+        }
     }
     public void delTienda(Tienda tienda) {
-       deleteTienda(tienda);      
+        Tienda t = getMapTienda().get(tienda.getName());
+        if (t != null && t.equals(tienda) ) {
+            deleteTienda(tienda);
+        }else{
+             System.out.println("seleccione una Tienda de la Franquicia");
+        }
     }
-    
-    
-    
     /**************************************************************
      * METODOS VIEW
      * VIEW{Name} recorre e imprimir los mapas 
@@ -186,34 +246,46 @@ class Franquicia {
     public void viewEmpleados(){
         if (opEmp){
             cargarEmpleados();
+            System.out.println("Cargando Empleados [........]");
         }
+        System.out.println( "_____________ FRANQUICIA : EMPLEADOS _____________");
         for (Empleado em : mapEmp.values()){
             System.out.println(em.toString());
         }
+        System.out.println( "===================================");
     }
     public void viewClientes(){
         if (opCli){
             cargarClientes();
+             System.out.println("Cargando Clientes [........]");
         }
+        System.out.println( "_____________ FRANQUICIA : CLIENTES_____________");
         for (Cliente cli : mapCli.values()){
             System.out.println(cli.toString());
         }
+        System.out.println( "===================================");
     }
     public void viewProductos(){
         if (opProd){
             cargarProductos();
+            System.out.println("Cargando Productos [........]");
         }
+        System.out.println( "_____________ FRANQUICIA : PRODUCTOS_____________");
         for (Producto p : mapProd.values()){
             System.out.println(p.toString());
         }
+        System.out.println( "===================================");
     }
      public void viewTiendas(){
         if (opTi){
             cargarTiendas();
+            System.out.println("Cargando Tiendas [........]");
         }
+        System.out.println( "_____________ FRANQUICIA : TIENDAS_____________");
         for (Tienda t : mapTienda.values()){
             System.out.println(t.toString());
         }
+        System.out.println( "===================================");
     }
      
       /***    ... METODOS PRIVATE ...    ***/
@@ -230,6 +302,7 @@ class Franquicia {
      ****************************************************************/ 
             
     private void cargarEmpleados() {
+        HashMap<String, Empleado>  auxMapEmp = null;
             try
             {
                 Connection con = db.getConn();
@@ -237,11 +310,13 @@ class Franquicia {
 
                 //Probamos a realizar unha consulta
                 ResultSet rs = statement.executeQuery("select * from EMPLEADO");
-
+                auxMapEmp = mapEmp;
+                mapEmp.clear();
+//                mapEmp=null;
                 while(rs.next()){
                        Empleado em = new Empleado( 
                                 rs.getString("EMPLEADO_name"),
-                                rs.getString(" EMPLEADO_apellido")
+                                rs.getString("EMPLEADO_apellido")
                             );
                             em.setId(rs.getInt("EMPLEADO_id"));  
                     mapEmp.put(em.getName(),em);   
@@ -251,16 +326,23 @@ class Franquicia {
             }finally{
                 opEmp = false;    
                 DB_driver.finishDB();
+//                if (mapTienda.isEmpty()){ // si no se cargan nuevos datos
+//                        mapEmp=auxMapEmp;
+//                        System.out.println(" Error no se han cargado datos en la tienda");
+//                    } 
             }
         }
     
     private void cargarClientes() {
+        HashMap<String, Cliente>  auxMapCli = null;
             try
             {
                 Connection con = db.getConn();
                 Statement statement = con.createStatement();
                 //Probamos a realizar unha consulta
                 ResultSet rs = statement.executeQuery("select * from CLIENTE");
+                auxMapCli=mapCli;
+                mapCli.clear();
                 while(rs.next()){
                 
                         Cliente c = new Cliente( 
@@ -275,23 +357,31 @@ class Franquicia {
             catch(SQLException e){
                 System.err.println(e.getMessage());
             }finally{
-            DB_driver.finishDB();
-            opCli = false;
+                DB_driver.finishDB();
+                opCli = false;
+//                if (mapTienda.isEmpty()){ // si no se cargan nuevos datos
+//                        mapCli=auxMapCli;
+//                        System.out.println(" Error no se han cargado datos en la tienda");
+//                    } 
             }
         }
     
-    private void cargarProductos() {
-            try
+    protected void cargarProductos() {
+        HashMap<String, Producto>  auxMapProd = null;   
+        try
             {
                 Connection con = db.getConn();
                 Statement statement = con.createStatement();
                 //Probamos a realizar unha consulta
                 ResultSet rs = statement.executeQuery("select * from PRODUCTO");
+                auxMapProd= mapProd;// por seguridad guardamos los datos del roducto
+                mapProd.clear();
+//                mapProd=null;
                 while(rs.next()){
                
                         Producto p = new Producto( 
                                 rs.getString("PRODUCTO_name"),
-                                rs.getFloat(" PRODUCTO_price"),
+                                rs.getFloat("PRODUCTO_price"),
                                 rs.getString("PRODUCTO_description")
                         );
                         p.setId(rs.getInt("PRODUCTO_id"));
@@ -303,22 +393,29 @@ class Franquicia {
             }finally{
             DB_driver.finishDB();
             opProd = false;
+//            if (mapProd.isEmpty()){// si no se cargan nuevos datos
+//                mapProd=auxMapProd;
+//                 System.out.println(" Error no se han cargado datos en el producto");
+//            }
             }
         }
         
     private void cargarTiendas() {
-        // creamos las tiendas
+        HashMap<String, Tienda>  auxMapTienda = null;
             try
             {
                 Connection con = db.getConn();
                 Statement statement = con.createStatement();
                 //Probamos a realizar unha consulta
                 ResultSet rs = statement.executeQuery("select * from TIENDA");
+                auxMapTienda= mapTienda; // por seguridad guardamos los datos de la tienda
+                mapTienda.clear();
+//                mapTienda=null;
                 while(rs.next()){
                 
                         Tienda t = new Tienda( 
                                 rs.getString("TIENDA_name"),
-                                rs.getString(" TIENDA_provincia"),
+                                rs.getString("TIENDA_provincia"),
                                 rs.getString("TIENDA_ciudad")
                             );
                         t.setId(rs.getInt("TIENDA_id"));
@@ -328,8 +425,12 @@ class Franquicia {
             catch(SQLException e){
                 System.err.println(e.getMessage());
             }finally{
-            DB_driver.finishDB();
-            opTi=false;
+                DB_driver.finishDB();
+                opTi=false;
+//                if (mapTienda.isEmpty()){ // si no se cargan nuevos datos
+//                    mapTienda=auxMapTienda;
+//                    System.out.println(" Error no se han cargado datos en la tienda");
+//                } 
             }
             
     }       
