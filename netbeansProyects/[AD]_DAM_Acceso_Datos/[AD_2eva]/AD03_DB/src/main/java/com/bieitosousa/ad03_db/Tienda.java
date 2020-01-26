@@ -373,61 +373,33 @@ public class Tienda  {
             }
     }
 
-    private void cargarProductos() {
-         ArrayList<int[]> listInfoProd = cargarProductosInfo();
-          if (listInfoProd.size()>0){
-            for (int[]  infoProducto : listInfoProd){
-                System.out.println("idProducto ["+ infoProducto[0] +"] stockProducto ["+infoProducto[1] +"]" );
-                try
-                    {
-                        Connection con = getFranquicia().db.getConn();
-                        Statement statement = con.createStatement();
-                        //Probamos a realizar unha consulta
-                        ResultSet rs = statement.executeQuery("select * from PRODUCTO where PRODUCTO_id  = "+infoProducto[0] );
-                        mapProd.clear();
-                        while(rs.next()){
-
-                                Producto p = new Producto( 
-                                        rs.getString("PRODUCTO_name"),
-                                        rs.getFloat(" PRODUCTO_price"),
-                                        rs.getString("PRODUCTO_description")
-                                );
-                                p.setId(rs.getInt("PRODUCTO_id"));
-                                p.setStock(infoProducto[1]);
-                                mapProd.put(p.getName(),p);
-                        }
-                    }
-                    catch(SQLException e){
-                        System.err.println(e.getMessage());
-                    }finally{
-                    DB_driver.finishDB();
-                    }
-            }
-         }else{
-             System.out.println(" Error ... No se han cargado los Empleados");
-         }   
-    }
-
     private void cargarEmpleados() {
-         ArrayList<float[]> listInfoEmp = cargarEmpleadosInfo();
-         if (listInfoEmp.size()>0){
-            for (float[]  infoEmpleado : listInfoEmp){
-                System.out.println("idEmpleado ["+ (int) infoEmpleado[0] +"] horaEmpleado ["+infoEmpleado[1] +"]" );
+        
                 try {
                         DB_driver.finishDB();   
                         Connection con = getFranquicia().db.getConn();
-                        Statement statement = con.createStatement(); 
-                        System.out.println("select * from EMPLEADO where EMPLEADO_id = " +(int)infoEmpleado[0]);
-                        ResultSet rs = statement.executeQuery("select * from EMPLEADO where EMPLEADO_id = " +(int)infoEmpleado[0]+";" );
+                        Statement statement = con.createStatement();
+                        String sql = "SELECT\n" +
+                                    "    TIENDA_EMPLEADO.TIENDA_id,\n" +
+                                    "    EMPLEADO.EMPLEADO_id,\n" +
+                                    "    EMPLEADO_name,\n" +
+                                    "    EMPLEADO_apellido,\n" +
+                                    "    nHoras\n" +
+                                    "FROM\n" +
+                                    " EMPLEADO   \n" +
+                                    " JOIN TIENDA_EMPLEADO ON\n" +
+                                    " EMPLEADO.EMPLEADO_id =TIENDA_EMPLEADO.EMPLEADO_id\n" +
+                                    "WHERE TIENDA_EMPLEADO.TIENDA_id = "+this.getId()+"   \n" +
+                                    "ORDER BY EMPLEADO_name;"; 
+                        ResultSet rs = statement.executeQuery(sql );
                         mapEmp.clear();
                         while(rs.next()){
                                Empleado em = new Empleado( 
                                         rs.getString("EMPLEADO_name"),
-                                        rs.getString(" EMPLEADO_apellido")
+                                        rs.getString("EMPLEADO_apellido")
                                     );
-                               System.out.println("empleado ["+ (int) infoEmpleado[0]+ "]" +em.toString());
                                     em.setId(rs.getInt("EMPLEADO_id")); 
-                                    em.setnHoras(infoEmpleado[1]);
+                                    em.setnHoras(rs.getFloat("nHoras"));
                             mapEmp.put(em.getName(),em);   
                         }
                     }catch(SQLException e){
@@ -436,57 +408,51 @@ public class Tienda  {
                           
                         DB_driver.finishDB();
                     }
-            }
-         }else{
-             System.out.println(" Error ... No se han cargado los Empleados");
-         }
+          
     }
 
-    private ArrayList<int[]> cargarProductosInfo() {
-        ArrayList<int[]> list = new ArrayList<int[]>();
-            try{
+    
+
+    private void cargarProductos() {
+          
+                try
+                    {
                         Connection con = getFranquicia().db.getConn();
                         Statement statement = con.createStatement();
-                        ResultSet rs = statement.executeQuery("select * from TIENDA_PRODUCTO where TIENDA_id = " +this.getId() );
+                        String sql = "SELECT\n" +
+                                    "    PRODUCTO.PRODUCTO_id,\n" +
+                                    "    PRODUCTO_name,\n" +
+                                    "    PRODUCTO_price,\n" +
+                                    "    PRODUCTO_description,\n" +
+                                    "    stock\n" +
+                                    "FROM\n" +
+                                    " PRODUCTO   \n" +
+                                    " JOIN TIENDA_PRODUCTO ON\n" +
+                                    "    PRODUCTO.PRODUCTO_id = TIENDA_PRODUCTO.PRODUCTO_id\n" +
+                                    "WHERE TIENDA_PRODUCTO.TIENDA_id = "+this.getId()+"   \n" +
+                                    "ORDER BY PRODUCTO_name;"; 
+                        ResultSet rs = statement.executeQuery(sql);
+                        mapProd.clear();
                         while(rs.next()){
-                            int[] arry = {
-                                 rs.getInt("PRODUCTO_id"),
-                                 rs.getInt("stock")
-                            };
-                         list.add(arry);  
+
+                                Producto p = new Producto( 
+                                        rs.getString("PRODUCTO_name"),
+                                        rs.getFloat("PRODUCTO_price"),
+                                        rs.getString("PRODUCTO_description")
+                                );
+                                p.setId(rs.getInt("PRODUCTO_id"));
+                                p.setStock(rs.getInt("stock"));
+                                mapProd.put(p.getName(),p);
                         }
-                    }catch(SQLException e){
+                    } catch(SQLException e){
                         System.err.println(e.getMessage());
                     }finally{
-                        opStock = false;    
-                        DB_driver.finishDB();
+                    DB_driver.finishDB();
                     }
-        return list;
+           
     }
-
-    private ArrayList<float[]> cargarEmpleadosInfo() {
-        ArrayList<float[]> list = new ArrayList<>();   
-            try{
-                        Connection con = getFranquicia().db.getConn();
-                        Statement statement = con.createStatement();
-
-                        //Probamos a realizar unha consulta
-                        ResultSet rs = statement.executeQuery("select * from TIENDA_EMPLEADO where TIENDA_id = " +this.getId() );
-                        while(rs.next()){
-                              float[] arry = {
-                                 (float)rs.getInt("EMPLEADO_id"),
-                                 rs.getFloat("nHoras")
-                            };
-                         list.add(arry);  
-                        }
-                    }catch(SQLException e){
-                        System.err.println(e.getMessage());
-                    }finally{
-                        opHoras = false;    
-                        DB_driver.finishDB();
-                    }
-        return list;
-    }
+    
+   
         //      ==== OPERACIONES ESCRITURA  SOBRE DB ======== \\
       /**************************************************************
      * insert{Name} llama a el drive pasandole un objeto 

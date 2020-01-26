@@ -444,7 +444,7 @@ public class DB_driver {
 			pstmt.setInt(2, idEmpleado);
             pstmt.setFloat(3, nHoras);
 			pstmt.executeUpdate();
-            System.out.println("Tienda ->> Empleado"+"["+ nHoras + "] acceso idTienda{"+idTienda+"} idEmpleado{"+idEmpleado+"}");
+            System.out.println("Tienda ->> Empleado"+"["+ nHoras + "] ");
         }
         catch(SQLException e){
             System.out.println(e.getMessage()+ "ERROR INSERT {{ Tienda ->> Empleado"+"["+ nHoras + "] }}");
